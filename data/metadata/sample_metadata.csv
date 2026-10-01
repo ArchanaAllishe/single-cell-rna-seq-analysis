@@ -1,0 +1,7 @@
+sample,condition,geo_accession,sra_run
+Unstim1,Unstimulated,GSM3669244,SRR8724694
+Unstim2,Unstimulated,GSM3669245,SRR8724695
+Unstim3,Unstimulated,GSM3669246,SRR8724696
+Stim1,Stimulated,GSM3669247,SRR8724697
+Stim2,Stimulated,GSM3669248,SRR8724698
+Stim3,Stimulated,GSM3669249,SRR8724699

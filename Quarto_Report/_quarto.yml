@@ -1,0 +1,31 @@
+project:
+  type: website
+  resources:
+    - results/**
+
+website:
+  title: "Comprehensive scRNA-Seq Analysis of Human NKT Cells"
+  page-navigation: true
+  back-to-top-navigation: true
+
+format:
+  html:
+    theme:
+      light: flatly
+
+    css: styles.css
+
+    toc: true
+    toc-location: left
+    toc-depth: 2
+
+    smooth-scroll: true
+
+    code-fold: true
+    code-tools: true
+
+    embed-resources: true
+
+    fig-align: center
+
+    link-external-newwindow: true
