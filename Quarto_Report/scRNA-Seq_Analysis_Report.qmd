@@ -22,7 +22,7 @@ format:
 
 <div class="project-team-item">
 <span class="project-role">Advisors:</span>
-<span class="project-person">Daniel Johnson · Zoe Coley</span>
+<span class="project-person">Daniel Johnson
 </div>
 
 <div class="project-team-item project-date">
