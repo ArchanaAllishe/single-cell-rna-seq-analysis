@@ -8,7 +8,7 @@
 
 </div>
 
-This project presents an end-to-end analysis of the publicly available **GSE128243** 10x Genomics dataset, consisting of human peripheral-blood NKT cells from **three unstimulated and three PMA/ionomycin-stimulated samples**.
+This project presents an end-to-end analysis of the publicly available **GSE128243** 10x Genomics dataset, consisting of human peripheral-blood NKT cells from **three unstimulated and three PMA/ionomycin-stimulated samples** [Zhou et al. (2020), PMID: 32528956].
 
 The project was developed as a reproducible implementation of a complete single-cell RNA-seq workflow, from raw sequencing data to biological interpretation. The analysis revealed strong stimulation-associated transcriptional changes and recovered the major biological patterns reported in the original study.
 
@@ -44,7 +44,11 @@ Cell Ranger estimated **14,202 cells across the six libraries**. After cell-leve
 
 The analysis identified **nine transcriptional clusters**. UMAP visualization showed strong separation between stimulated and unstimulated cells, while biological replicates generally overlapped within their respective conditions.
 
-![UMAP by condition](Quarto_Report/results/umap_condition.png)
+<p align="center">
+  <img src="Quarto_Report/results/umap_condition.png"
+       alt="UMAP by condition"
+       width="700">
+</p>
 
 ### Differential expression
 
@@ -55,7 +59,11 @@ DESeq2 identified **5,313 significantly differentially expressed genes**:
 - **2,843 upregulated**
 - **2,470 downregulated**
 
-![Pseudobulk differential-expression volcano plot](Quarto_Report/results/pseudobulk_volcano.png)
+<p align="center">
+  <img src="Quarto_Report/results/pseudobulk_volcano.png"
+       alt="Pseudobulk differential-expression volcano plot"
+       width="700">
+</p>
 
 Pseudobulk PCA also showed clear separation of stimulated and unstimulated samples, with the three biological replicates grouping by condition.
 
