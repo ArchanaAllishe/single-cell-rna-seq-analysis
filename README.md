@@ -4,7 +4,7 @@
 
 ### From Raw 10x Genomics Data to Biological Interpretation
 
-**[View Interactive Analysis Report](https://ArchanaAllishe.github.io/single-cell-rna-seq-analysis/)**
+*[View Detailed Interactive Analysis Report](https://ArchanaAllishe.github.io/single-cell-rna-seq-analysis/)*
 
 </div>
 
