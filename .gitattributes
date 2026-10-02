@@ -1,0 +1,5 @@
+# Generated reports should not contribute to repository language statistics
+Quarto_Report/results/multiqc_report.html linguist-generated=true
+
+# Quarto-generated website files
+Quarto_Report/_site/** linguist-generated=true
