@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Download FASTQ files for GSE128243
-# Requires SRA Toolkit: prefetch and fasterq-dump
+### Download FASTQ files for GSE128243, Requires SRA Toolkit: prefetch and fasterq-dump
 
 # Stop the script if a command fails or a variable is missing
 set -euo pipefail
