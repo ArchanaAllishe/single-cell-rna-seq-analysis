@@ -1,36 +1,14 @@
-# ============================================================
-# Visualize UMAP by experimental condition
-# ============================================================
-#
-# Purpose:
-#   Examine how stimulated and unstimulated cells are
-#   distributed across the transcriptional landscape.
-#
-# Input:
-#   results/seurat_umap.rds
-#
-# Output:
-#   results/umap_condition.pdf
-#
-# ============================================================
+## Plot UMAP by condition
 
 library(Seurat)
 
+# Load UMAP data
+seurat <- readRDS("results/seurat_umap.rds")
 
-seurat <- readRDS(
-  "results/seurat_umap.rds"
-)
+# Plot stimulated and unstimulated cells
+pdf("results/umap_condition.pdf")
 
+DimPlot(seurat, reduction = "umap",group.by = "condition")
 
-pdf(
-  "results/umap_condition.pdf"
-)
-
-DimPlot(
-  seurat,
-  reduction = "umap",
-  group.by = "condition"
-)
-
+# Close and save the PDF
 dev.off()
-
