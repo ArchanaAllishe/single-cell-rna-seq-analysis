@@ -1,55 +1,18 @@
 #!/bin/bash
 
-# ============================================================
-# Download raw sequencing data for GSE128243
-# ============================================================
-#
-# Downloads the six SRA runs used in this analysis and
-# converts each run to compressed FASTQ files.
-#
-# Samples:
-#   Unstim1 -> SRR8724694
-#   Unstim2 -> SRR8724695
-#   Unstim3 -> SRR8724696
-#   Stim1   -> SRR8724697
-#   Stim2   -> SRR8724698
-#   Stim3   -> SRR8724699
-#
-# SRA Toolkit programs required:
-#   prefetch
-#   fasterq-dump
-#
-# The dataset contains three reads:
-#   _1 = sample index
-#   _2 = cell barcode + UMI
-#   _3 = transcript sequence
-#
-# ============================================================
+# Download FASTQ files for GSE128243
+# Requires SRA Toolkit: prefetch and fasterq-dump
 
+# Stop the script if a command fails or a variable is missing
 set -euo pipefail
 
+# Data folders
+raw_dir="data/raw"
+sra_dir="data/sra_cache"
 
-# ------------------------------------------------------------
-# Project directories
-# ------------------------------------------------------------
+mkdir -p "$raw_dir" "$sra_dir"
 
-# Determine the repository root from the location of this
-# script so that the workflow does not depend on a
-# machine-specific absolute path.
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-project_dir="$(cd "$script_dir/../.." && pwd)"
-
-raw_data_dir="$project_dir/data/raw"
-sra_cache_dir="$project_dir/data/sra_cache"
-
-mkdir -p "$raw_data_dir" "$sra_cache_dir"
-
-
-# ------------------------------------------------------------
-# Sample-to-SRA mapping
-# ------------------------------------------------------------
-
+# Sample and SRA run IDs
 declare -A samples=(
     [Unstim1]="SRR8724694"
     [Unstim2]="SRR8724695"
@@ -59,53 +22,31 @@ declare -A samples=(
     [Stim3]="SRR8724699"
 )
 
-
-# ------------------------------------------------------------
-# Download and convert each run
-# ------------------------------------------------------------
-
-for sample_name in Unstim1 Unstim2 Unstim3 Stim1 Stim2 Stim3
+# Download each sample
+for sample in Unstim1 Unstim2 Unstim3 Stim1 Stim2 Stim3
 do
+    sra="${samples[$sample]}"
 
-    sra_run="${samples[$sample_name]}"
+    echo "Processing $sample ($sra)"
 
-    echo
-    echo "Processing $sample_name ($sra_run)"
-
-
-    # Download the complete SRA run.
-    # --max-size u removes the default download-size limit.
-
-    prefetch "$sra_run" \
-        --output-directory "$sra_cache_dir" \
+    # Download SRA data
+    prefetch "$sra" \
+        --output-directory "$sra_dir" \
         --max-size u
 
-
-    # Convert the SRA run to FASTQ.
-    #
-    # --split-files separates the reads.
-    # --include-technical retains the technical reads required
-    # for reconstructing the original 10x read structure.
-
-    fasterq-dump \
-        "$sra_cache_dir/$sra_run" \
+    # Convert to FASTQ
+    fasterq-dump "$sra_dir/$sra" \
         --split-files \
         --include-technical \
-        --outdir "$raw_data_dir" \
-        --threads 6 \
-        --progress
+        --outdir "$raw_dir" \
+        --threads 6
 
+    # Compress FASTQ files
+    gzip "$raw_dir/${sra}_1.fastq"
+    gzip "$raw_dir/${sra}_2.fastq"
+    gzip "$raw_dir/${sra}_3.fastq"
 
-    # Compress all three FASTQ files.
-
-    gzip "$raw_data_dir/${sra_run}_1.fastq"
-    gzip "$raw_data_dir/${sra_run}_2.fastq"
-    gzip "$raw_data_dir/${sra_run}_3.fastq"
-
-    echo "Completed $sample_name"
-
+    echo "$sample complete"
 done
 
-
-echo
-echo "All six SRA runs were downloaded and converted to FASTQ."
+echo "All six samples complete."
