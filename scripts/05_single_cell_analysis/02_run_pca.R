@@ -1,70 +1,23 @@
-# ============================================================
-# Scale variable genes and perform PCA
-# ============================================================
-#
-# Purpose:
-#   Reduce the dimensionality of the single-cell expression
-#   data using the 2,000 highly variable genes identified in
-#   the previous stage.
-#
-# Input:
-#   results/seurat_normalized.rds
-#
-# Output:
-#   results/seurat_pca.rds
-#   results/pca_elbow_plot.pdf
-#
-# ============================================================
+### Run PCA using variable genes
 
 library(Seurat)
 
+# Load normalized data
+seurat <- readRDS("results/seurat_normalized.rds")
 
-seurat <- readRDS(
-  "results/seurat_normalized.rds"
-)
+# Scale the 2,000 variable genes
+seurat <- ScaleData(seurat, features = VariableFeatures(seurat))
 
+# Run PCA
+seurat <- RunPCA(seurat, features = VariableFeatures(seurat))
 
-# ------------------------------------------------------------
-# Scale highly variable genes
-# ------------------------------------------------------------
+# Plot the first 50 PCs
+pdf("results/pca_elbow_plot.pdf")
 
-seurat <- ScaleData(
-  seurat,
-  features = VariableFeatures(seurat)
-)
+ElbowPlot(seurat, ndims = 50)
 
-
-# ------------------------------------------------------------
-# Principal component analysis
-# ------------------------------------------------------------
-
-seurat <- RunPCA(
-  seurat,
-  features = VariableFeatures(seurat)
-)
-
-
-# ------------------------------------------------------------
-# Examine variance across principal components
-# ------------------------------------------------------------
-
-pdf(
-  "results/pca_elbow_plot.pdf"
-)
-
-ElbowPlot(
-  seurat,
-  ndims = 50
-)
-
+# Close and save the PDF
 dev.off()
 
-
-# ------------------------------------------------------------
-# Save PCA object
-# ------------------------------------------------------------
-
-saveRDS(
-  seurat,
-  "results/seurat_pca.rds"
-)
+# Save PCA data
+saveRDS(seurat,"results/seurat_pca.rds")
