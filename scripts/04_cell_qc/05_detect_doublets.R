@@ -1,111 +1,47 @@
-# ============================================================
-# Detect and remove doublets with scDblFinder
-# ============================================================
-#
-# Purpose:
-#   Identify potential doublets independently within each
-#   biological sample and retain cells classified as singlets.
-#
-# Why process samples separately?
-#   The six libraries are independent biological samples.
-#   Doublet detection is therefore performed within each
-#   sample before the retained singlets are merged again.
-#
-# Input:
-#   results/seurat_filtered.rds
-#
-# Output:
-#   results/seurat_singlets.rds
-#
-# ============================================================
+### Detect and remove doublets
 
 library(Seurat)
 library(scDblFinder)
 library(SingleCellExperiment)
 
+# Load QC-filtered data
+seurat <- readRDS("results/seurat_filtered.rds")
 
-# ------------------------------------------------------------
-# Load QC-filtered cells
-# ------------------------------------------------------------
-
-seurat <- readRDS(
-  "results/seurat_filtered.rds"
-)
-
-
-# ------------------------------------------------------------
-# Split into the six original libraries
-# ------------------------------------------------------------
-
-samples <- SplitObject(
-  seurat,
-  split.by = "sample"
-)
+# Split cells by sample
+samples <- SplitObject(seurat, split.by = "sample")
 
 clean_list <- list()
 
+# Find doublets in each sample
+for (sample in names(samples)) {
 
-# ------------------------------------------------------------
-# Detect doublets independently in each sample
-# ------------------------------------------------------------
-
-for (s in names(samples)) {
-
-  sce <- as.SingleCellExperiment(
-    samples[[s]]
-  )
-
-
-  # Classify cells using scDblFinder.
+  sce <- as.SingleCellExperiment(samples[[sample]])
 
   sce <- scDblFinder(sce)
 
-
-  # Retain cells classified as singlets.
-
+  # Keep only singlets
   keep <- colnames(sce)[
     sce$scDblFinder.class == "singlet"
   ]
 
-  clean_list[[s]] <- subset(
-    samples[[s]],
+  clean_list[[sample]] <- subset(
+    samples[[sample]],
     cells = keep
   )
 
-
   cat(
-    s,
+    sample,
     "- Doublets:",
-    sum(
-      sce$scDblFinder.class == "doublet"
-    ),
+    sum(sce$scDblFinder.class == "doublet"),
     "\n"
   )
 }
 
-
-# ------------------------------------------------------------
-# Merge retained singlets
-# ------------------------------------------------------------
-
-seurat <- merge(
-  clean_list[[1]],
-  y = clean_list[2:6]
+# Merge singlets from all samples
+seurat <- merge(clean_list[[1]], y = clean_list[2:6]
 )
 
+cat("Total singlets:", ncol(seurat), "\n")
 
-cat(
-  "\nTotal singlets retained:",
-  ncol(seurat),
-  "\n"
-)
-
-
-# ------------------------------------------------------------
-# Save final QC-filtered object
-# ------------------------------------------------------------
-
-saveRDS(
-  seurat,
-  "results/seurat_singlets.rds"
-)
+# Save singlet cells
+saveRDS(seurat, "results/seurat_singlets.rds")
