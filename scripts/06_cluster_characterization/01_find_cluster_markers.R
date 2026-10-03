@@ -1,48 +1,14 @@
-# ============================================================
-# Identify marker genes for each cluster
-# ============================================================
-#
-# Purpose:
-#   Identify genes with increased expression in each cluster
-#   compared with the remaining cells.
-#
-# Input:
-#   results/seurat_umap.rds
-#
-# Parameters:
-#   only.pos = TRUE
-#   min.pct = 0.25
-#   logfc.threshold = 0.25
-#
-# Output:
-#   results/cluster_markers.csv
-#
-# ============================================================
+### Find marker genes for each cluster
 
 library(Seurat)
 
+# Load clustered data
+seurat <- readRDS("results/seurat_umap.rds")
 
-# Load clustered Seurat object.
-
-seurat <- readRDS(
-  "results/seurat_umap.rds"
-)
-
-
-# ------------------------------------------------------------
-# Join expression layers
-# ------------------------------------------------------------
-
-# The merged Seurat object can contain separate expression
-# layers. Join them before marker-gene testing.
-
+# Join expression layers before finding markers
 seurat <- JoinLayers(seurat)
 
-
-# ------------------------------------------------------------
-# Identify cluster markers
-# ------------------------------------------------------------
-
+# Find genes with higher expression in each cluster
 markers <- FindAllMarkers(
   seurat,
   only.pos = TRUE,
@@ -50,28 +16,10 @@ markers <- FindAllMarkers(
   logfc.threshold = 0.25
 )
 
+# Save marker genes
+write.csv(markers, "results/cluster_markers.csv",row.names = FALSE)
 
-# ------------------------------------------------------------
-# Save marker results
-# ------------------------------------------------------------
+# Save data with joined layers
+saveRDS(seurat, "results/seurat_umap.rds")
 
-write.csv(
-  markers,
-  "results/cluster_markers.csv",
-  row.names = FALSE
-)
-
-
-# Preserve the object with joined expression layers.
-
-saveRDS(
-  seurat,
-  "results/seurat_umap.rds"
-)
-
-
-cat(
-  "Marker genes identified:",
-  nrow(markers),
-  "\n"
-)
+cat("Marker genes identified:", nrow(markers), "\n")
