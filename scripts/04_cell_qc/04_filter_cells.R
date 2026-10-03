@@ -1,32 +1,11 @@
-# ============================================================
-# Apply cell-level QC filtering
-# ============================================================
-#
-# Retain cells with:
-#
-#   200 <= detected genes <= 2000
-#   mitochondrial percentage < 10%
-#
-# Input:
-#   results/seurat_before_filtering.rds
-#
-# Output:
-#   results/seurat_filtered.rds
-#
-# ============================================================
+### Filter cells based on QC cutoffs
 
 library(Seurat)
 
+# Load Seurat object
+seurat <- readRDS("results/seurat_before_filtering.rds")
 
-seurat <- readRDS(
-  "results/seurat_before_filtering.rds"
-)
-
-
-# ------------------------------------------------------------
-# Apply QC thresholds
-# ------------------------------------------------------------
-
+# Keep cells that pass the QC cutoffs
 seurat <- subset(
   seurat,
   subset =
@@ -36,21 +15,5 @@ seurat <- subset(
 )
 
 
-# ------------------------------------------------------------
-# Check retained cells
-# ------------------------------------------------------------
-
-cat("\nCells retained by sample:\n")
-print(table(seurat$sample))
-
-cat("\nTotal retained cells:", ncol(seurat), "\n")
-
-
-# ------------------------------------------------------------
-# Save filtered object
-# ------------------------------------------------------------
-
-saveRDS(
-  seurat,
-  "results/seurat_filtered.rds"
-)
+# Save filtered data
+saveRDS(seurat, "results/seurat_filtered.rds")
