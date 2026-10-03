@@ -1,89 +1,28 @@
-"""
-Summarize Cell Ranger QC metrics across the six libraries.
+### Summarize Cell Ranger QC results
 
-For each sample, Cell Ranger produces metrics_summary.csv.
-This script combines those files into one complete table and
-also creates a smaller table containing the major QC metrics.
-"""
-
-from pathlib import Path
 import pandas as pd
 
+cellranger_dir = "results/cellranger"
 
-# ------------------------------------------------------------
-# Project paths
-# ------------------------------------------------------------
+samples = ["Unstim1", "Unstim2", "Unstim3", "Stim1", "Stim2", "Stim3"]
 
-project_dir = Path(__file__).resolve().parents[2]
-
-cellranger_dir = project_dir / "results" / "cellranger"
-output_dir = project_dir / "results" / "cellranger"
-
-
-# ------------------------------------------------------------
-# Biological samples
-# ------------------------------------------------------------
-
-samples = [
-    "Unstim1",
-    "Unstim2",
-    "Unstim3",
-    "Stim1",
-    "Stim2",
-    "Stim3",
-]
-
-
-# ------------------------------------------------------------
-# Read Cell Ranger metrics
-# ------------------------------------------------------------
-
-qc_tables = []
+# Read the QC file from each sample
+all_qc = []
 
 for sample in samples:
+    file = f"{cellranger_dir}/{sample}/outs/metrics_summary.csv"
 
-    metrics_file = (
-        cellranger_dir
-        / sample
-        / "outs"
-        / "metrics_summary.csv"
-    )
-
-    if not metrics_file.exists():
-        raise FileNotFoundError(
-            f"Cell Ranger metrics not found: {metrics_file}"
-        )
-
-    qc = pd.read_csv(metrics_file)
-
-    # Add the biological sample name to the table.
+    qc = pd.read_csv(file)
     qc.insert(0, "Sample", sample)
 
-    qc_tables.append(qc)
+    all_qc.append(qc)
 
+# Combine the six samples
+qc_summary = pd.concat(all_qc, ignore_index=True)
+qc_summary.to_csv(f"{cellranger_dir}/cellranger_qc_summary.csv",index=False)
 
-# ------------------------------------------------------------
-# Combine all six samples
-# ------------------------------------------------------------
-
-qc = pd.concat(
-    qc_tables,
-    ignore_index=True
-)
-
-complete_output = output_dir / "cellranger_qc_summary.csv"
-
-qc.to_csv(
-    complete_output,
-    index=False
-)
-
-
-# ------------------------------------------------------------
-# Select major QC metrics
-# ------------------------------------------------------------
-
-selected_columns = [
+# Select the QC values I want to compare
+columns = [
     "Sample",
     "Estimated Number of Cells",
     "Mean Reads per Cell",
@@ -91,30 +30,9 @@ selected_columns = [
     "Median UMI Counts per Cell",
     "Sequencing Saturation",
     "Reads Mapped Confidently to Transcriptome",
-    "Fraction Reads in Cells",
+    "Fraction Reads in Cells"
 ]
 
-qc_selected = qc[selected_columns]
-
-
-# Display the summary in the terminal.
-
-print(qc_selected.to_string(index=False))
-
-
-# Save the smaller QC table.
-
-selected_output = (
-    output_dir
-    / "cellranger_qc_selected_metrics.csv"
-)
-
-qc_selected.to_csv(
-    selected_output,
-    index=False
-)
-
-
-print("\nCell Ranger QC summary created.")
-print(f"Complete metrics: {complete_output}")
-print(f"Selected metrics: {selected_output}")
+selected_qc = qc_summary[columns]
+selected_qc.to_csv(f"{cellranger_dir}/cellranger_qc_selected_metrics.csv",index=False)
+print(selected_qc.to_string(index=False))
