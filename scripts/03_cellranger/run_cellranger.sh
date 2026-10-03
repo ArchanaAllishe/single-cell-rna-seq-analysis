@@ -1,59 +1,22 @@
 #!/bin/bash
 
-# ============================================================
-# Run Cell Ranger gene-expression processing
-# ============================================================
-#
-# Purpose:
-#   Process the six 10x Genomics scRNA-seq libraries with
-#   Cell Ranger count.
-#
-# Samples:
-#   Unstim1, Unstim2, Unstim3
-#   Stim1, Stim2, Stim3
-#
-# Reference:
-#   GRCh38 2024-A
-#
-# Chemistry:
-#   10x Single Cell 3' v2 (SC3Pv2)
-#
-# Main Cell Ranger outputs include:
-#   filtered_feature_bc_matrix/
-#   metrics_summary.csv
-#   web_summary.html
-#   BAM files
-#
-# ============================================================
+### Run Cell Ranger for all six samples
 
+# Stop if a command fails or a variable is missing
 set -euo pipefail
 
-
-# ------------------------------------------------------------
-# Project paths
-# ------------------------------------------------------------
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-project_dir="$(cd "$script_dir/../.." && pwd)"
-
-fastq_dir="$project_dir/data/raw"
-reference="$project_dir/data/reference/refdata-gex-GRCh38-2024-A"
-output_dir="$project_dir/results/cellranger"
+# Input and output folders
+fastq_dir="data/raw"
+reference="data/reference/refdata-gex-GRCh38-2024-A"
+output_dir="results/cellranger"
 
 mkdir -p "$output_dir"
+cd "$output_dir"
 
-
-# ------------------------------------------------------------
-# Process each biological sample
-# ------------------------------------------------------------
-
+# Run Cell Ranger for each sample
 for sample in Unstim1 Unstim2 Unstim3 Stim1 Stim2 Stim3
 do
-
-    echo
-    echo "Running Cell Ranger: $sample"
-
-    cd "$output_dir"
+    echo "Processing $sample"
 
     cellranger count \
         --id="$sample" \
@@ -65,10 +28,7 @@ do
         --localcores=16 \
         --localmem=128
 
-    echo "Completed: $sample"
-
+    echo "$sample complete"
 done
 
-
-echo
-echo "Cell Ranger processing completed for all six samples."
+echo "Cell Ranger complete for all six samples."
