@@ -1,51 +1,19 @@
-# ============================================================
-# Heatmap of strongly differentially expressed genes
-# ============================================================
-#
-# Purpose:
-#   Visualize the strongest stimulation-associated expression
-#   changes across the six biological samples.
-#
-# Genes displayed:
-#   Top 10 upregulated genes
-#   Top 10 downregulated genes
-#
-# Input:
-#   results/pseudobulk_dds.rds
-#   results/pseudobulk_deseq2_results.csv
-#
-# Output:
-#   results/pseudobulk_top20_heatmap.pdf
-#
-# ============================================================
+### Create heatmap of top differentially expressed genes
 
 library(DESeq2)
 library(pheatmap)
 
+# Load DESeq2 data and results
+dds <- readRDS("results/pseudobulk_dds.rds")
+res <- read.csv("results/pseudobulk_deseq2_results.csv")
 
-dds <- readRDS(
-  "results/pseudobulk_dds.rds"
-)
-
-res <- read.csv(
-  "results/pseudobulk_deseq2_results.csv"
-)
-
-
-# ------------------------------------------------------------
-# Variance-stabilizing transformation
-# ------------------------------------------------------------
-
+# Transform counts for visualization
 vsd <- vst(
   dds,
   blind = TRUE
 )
 
-
-# ------------------------------------------------------------
-# Select significant genes
-# ------------------------------------------------------------
-
+# Get significant upregulated genes
 up <- subset(
   res,
   !is.na(padj) &
@@ -53,6 +21,7 @@ up <- subset(
   log2FoldChange >= 1
 )
 
+# Get significant downregulated genes
 down <- subset(
   res,
   !is.na(padj) &
@@ -60,66 +29,36 @@ down <- subset(
   log2FoldChange <= -1
 )
 
+# Sort by fold change
+up <- up[order(up$log2FoldChange, decreasing = TRUE), ]
+down <- down[order(down$log2FoldChange), ]
 
-# Rank genes by fold change.
-
-up <- up[
-  order(
-    up$log2FoldChange,
-    decreasing = TRUE
-  ),
-]
-
-down <- down[
-  order(
-    down$log2FoldChange
-  ),
-]
-
-
+# Select top 10 up and top 10 down genes
 top_genes <- c(
   head(up$gene, 10),
   head(down$gene, 10)
 )
 
-
-# ------------------------------------------------------------
-# Extract transformed expression values
-# ------------------------------------------------------------
-
+# Get expression values for selected genes
 mat <- assay(vsd)[
   top_genes,
   ,
   drop = FALSE
 ]
 
+# Scale expression for each gene
+mat <- t(scale(t(mat)))
 
-# Standardize expression across samples for each gene.
-
-mat <- t(
-  scale(
-    t(mat)
-  )
-)
-
-
-# ------------------------------------------------------------
-# Sample annotation
-# ------------------------------------------------------------
-
+# Add sample condition
 annotation <- data.frame(
   Condition = colData(vsd)$condition
 )
 
 rownames(annotation) <- colnames(mat)
 
-
-# ------------------------------------------------------------
-# Plot heatmap
-# ------------------------------------------------------------
-
+# Create heatmap
 pdf(
-  "results/pseudobulk_top20_heatmap.pdf",
+  "../results/pseudobulk_top20_heatmap.pdf",
   width = 7,
   height = 8
 )
@@ -134,4 +73,5 @@ pheatmap(
   main = "Top Differentially Expressed Genes"
 )
 
+# Close and save the PDF
 dev.off()
