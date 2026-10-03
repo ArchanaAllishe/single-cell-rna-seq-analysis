@@ -1,34 +1,11 @@
-# ============================================================
-# Volcano plot of pseudobulk differential expression
-# ============================================================
-#
-# Comparison:
-#   Stimulated vs Unstimulated NKT cells
-#
-# Significance criteria:
-#   adjusted p-value < 0.05
-#   |log2 fold change| >= 1
-#
-# Input:
-#   results/pseudobulk_deseq2_results.csv
-#
-# Output:
-#   results/pseudobulk_volcano.pdf
-#
-# ============================================================
+### Create volcano plot for pseudobulk differential expression
 
 library(ggplot2)
 
+# Load DESeq2 results
+res <- read.csv("results/pseudobulk_deseq2_results.csv")
 
-res <- read.csv(
-  "results/pseudobulk_deseq2_results.csv"
-)
-
-
-# ------------------------------------------------------------
-# Classify differential-expression status
-# ------------------------------------------------------------
-
+# Label significant genes
 res$status <- "Not significant"
 
 res$status[
@@ -43,52 +20,31 @@ res$status[
   res$log2FoldChange <= -1
 ] <- "Down"
 
-
-# ------------------------------------------------------------
 # Calculate -log10 adjusted p-value
-# ------------------------------------------------------------
-
-# Protect against adjusted p-values equal to zero.
-
 res$padj_plot <- pmax(
   res$padj,
   .Machine$double.xmin
 )
 
-res$neg_log10_padj <- -log10(
-  res$padj_plot
-)
+res$neg_log10_padj <- -log10(res$padj_plot)
 
-
-# Cap very large values for visualization.
-
+# Limit very large values on the plot
 res$neg_log10_padj[
   res$neg_log10_padj > 50
 ] <- 50
 
-
-# Remove rows that cannot be plotted.
-
+# Remove missing values
 plot_data <- res[
   !is.na(res$log2FoldChange) &
   !is.na(res$neg_log10_padj),
 ]
 
-
 plot_data$status <- factor(
   plot_data$status,
-  levels = c(
-    "Down",
-    "Not significant",
-    "Up"
-  )
+  levels = c("Down", "Not significant", "Up")
 )
 
-
-# ------------------------------------------------------------
-# Generate volcano plot
-# ------------------------------------------------------------
-
+# Create volcano plot
 p <- ggplot(
   plot_data,
   aes(
@@ -97,10 +53,7 @@ p <- ggplot(
     color = status
   )
 ) +
-  geom_point(
-    alpha = 0.6,
-    size = 1.5
-  ) +
+  geom_point(alpha = 0.6, size = 1.5) +
   geom_vline(
     xintercept = c(-1, 1),
     linetype = "dashed"
@@ -117,10 +70,5 @@ p <- ggplot(
   ) +
   theme_classic()
 
-
-ggsave(
-  "results/pseudobulk_volcano.pdf",
-  plot = p,
-  width = 7,
-  height = 6
-)
+# Save the plot
+ggsave("results/pseudobulk_volcano.pdf", plot = p, width = 7, height = 6)
