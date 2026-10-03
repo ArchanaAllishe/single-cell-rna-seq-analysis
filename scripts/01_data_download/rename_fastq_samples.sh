@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Rename SRA FASTQ files using sample names
+### Rename SRA FASTQ files using sample names
 
 # Stop if a command fails or a variable is missing
 set -euo pipefail
