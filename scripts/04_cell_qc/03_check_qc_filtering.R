@@ -1,66 +1,30 @@
-# ============================================================
-# Evaluate proposed cell-level QC cutoffs
-# ============================================================
-#
-# Purpose:
-#   Determine how many cells in each biological sample would
-#   fail the selected QC thresholds before filtering.
-#
-# QC criteria:
-#   nFeature_RNA >= 200
-#   nFeature_RNA <= 2000
-#   percent.mt < 10
-#
-# Input:
-#   results/seurat_before_filtering.rds
-#
-# ============================================================
+### Check how many cells pass the QC cutoffs
 
 library(Seurat)
 
+# Load Seurat object
+seurat <- readRDS("results/seurat_before_filtering.rds")
 
-seurat <- readRDS(
-  "results/seurat_before_filtering.rds"
-)
+# Check QC for each sample
+for (sample in unique(seurat$sample)) {
 
-
-for (s in unique(seurat$sample)) {
-
-  # Metadata for one biological sample.
-
-  cells <- seurat@meta.data[
-    seurat$sample == s,
-  ]
-
+  cells <- seurat@meta.data[seurat$sample == sample, ]
 
   total <- nrow(cells)
 
+  # Count cells outside each cutoff
+  low_genes <- sum(cells$nFeature_RNA < 200)
+  high_genes <- sum(cells$nFeature_RNA > 2000)
+  high_mt <- sum(cells$percent.mt >= 10)
 
-  # Number of cells failing each individual criterion.
-
-  low_genes <- sum(
-    cells$nFeature_RNA < 200
-  )
-
-  high_genes <- sum(
-    cells$nFeature_RNA > 2000
-  )
-
-  high_mt <- sum(
-    cells$percent.mt >= 10
-  )
-
-
-  # Number satisfying all three criteria.
-
+  # Count cells that pass all cutoffs
   kept <- sum(
     cells$nFeature_RNA >= 200 &
     cells$nFeature_RNA <= 2000 &
     cells$percent.mt < 10
   )
 
-
-  cat("\n", s, "\n")
+  cat("\n", sample, "\n")
   cat("Total:", total, "\n")
   cat("Low genes:", low_genes, "\n")
   cat("High genes:", high_genes, "\n")
@@ -68,4 +32,3 @@ for (s in unique(seurat$sample)) {
   cat("Removed:", total - kept, "\n")
   cat("Kept:", kept, "\n")
 }
-
